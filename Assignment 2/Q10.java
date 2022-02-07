@@ -4,58 +4,61 @@ import java.util.List;
 
 public class Q10 {
 
+        public List<List<Integer>> fourSum(int[] nums, int target) {
+            Arrays.sort(nums);
+            return kSum(nums, target, 0, 4);
+        }
 
-    int len = 0;
-    public List<List<Integer>> fourSum(int[] nums, int target) {
-        len = nums.length;
-        Arrays.sort(nums);
-        return kSum(nums, target, 4, 0);
-    }
-    private ArrayList<List<Integer>> kSum(int[] nums, int target, int k, int index) {
-        ArrayList<List<Integer>> res = new ArrayList<List<Integer>>();
-        if(index >= len) {
+        public List<List<Integer>> kSum(int[] nums, int target, int start, int k) {
+            List<List<Integer>> res = new ArrayList<>();
+
+            // If we have run out of numbers to add, return res.
+            if (start == nums.length) {
+                return res;
+            }
+
+            // There are k remaining values to add to the sum. The
+            // average of these values is at least target / k.
+            int average_value = target / k;
+
+            // We cannot obtain a sum of target if the smallest value
+            // in nums is greater than target / k or if the largest
+            // value in nums is smaller than target / k.
+            if  (nums[start] > average_value || average_value > nums[nums.length - 1]) {
+                return res;
+            }
+
+            if (k == 2) {
+                return twoSum(nums, target, start);
+            }
+
+            for (int i = start; i < nums.length; ++i) {
+                if (i == start || nums[i - 1] != nums[i]) {
+                    for (List<Integer> subset : kSum(nums, target - nums[i], i + 1, k - 1)) {
+                        res.add(new ArrayList<>(Arrays.asList(nums[i])));
+                        res.get(res.size() - 1).addAll(subset);
+                    }
+                }
+            }
+
             return res;
         }
-        if(k == 2) {
-            int i = index, j = len - 1;
-            while(i < j) {
-                //find a pair
-                if(target - nums[i] == nums[j]) {
-                    List<Integer> temp = new ArrayList<>();
-                    temp.add(nums[i]);
-                    temp.add(target-nums[i]);
-                    res.add(temp);
-                    //skip duplication
-                    while(i<j && nums[i]==nums[i+1]) i++;
-                    while(i<j && nums[j-1]==nums[j]) j--;
-                    i++;
-                    j--;
-                    //move left bound
-                } else if (target - nums[i] > nums[j]) {
-                    i++;
-                    //move right bound
-                } else {
-                    j--;
-                }
-            }
-        } else{
-            for (int i = index; i < len - k + 1; i++) {
-                //use current number to reduce ksum into k-1sum
-                ArrayList<List<Integer>> temp = kSum(nums, target - nums[i], k-1, i+1);
-                if(temp != null){
-                    //add previous results
-                    for (List<Integer> t : temp) {
-                        t.add(0, nums[i]);
-                    }
-                    res.addAll(temp);
-                }
-                while (i < len-1 && nums[i] == nums[i+1]) {
-                    //skip duplicated numbers
-                    i++;
-                }
-            }
-        }
-        return res;
-    }
-}
 
+        public List<List<Integer>> twoSum(int[] nums, int target, int start) {
+            List<List<Integer>> res = new ArrayList<>();
+            int lo = start, hi = nums.length - 1;
+
+            while (lo < hi) {
+                int currSum = nums[lo] + nums[hi];
+                if (currSum < target || (lo > start && nums[lo] == nums[lo - 1])) {
+                    ++lo;
+                } else if (currSum > target || (hi < nums.length - 1 && nums[hi] == nums[hi + 1])) {
+                    --hi;
+                } else {
+                    res.add(Arrays.asList(nums[lo++], nums[hi--]));
+                }
+            }
+
+            return res;
+        }
+    }
